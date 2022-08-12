@@ -140,7 +140,7 @@ resource "aws_instance" "main" {
   monitoring = true
 
   # Install MySQL
-  # user_data = file("${path.module}/mysql.sh")
+  user_data = file("${path.module}/mysql.sh")
 
   network_interface {
     network_interface_id = aws_network_interface.main.id
