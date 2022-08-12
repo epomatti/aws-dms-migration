@@ -147,4 +147,8 @@ resource "aws_instance" "main" {
     device_index         = 0
   }
 
+  tags = {
+    Name = "${local.affix}"
+  }
+
 }
