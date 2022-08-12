@@ -12,6 +12,3 @@ sudo sed -i 's/127.0.0.1/0.0.0.0/0#g' /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo systemctl restart mysql
 
 sudo ufw allow 3306
-
-
-mysql --user="$user" --password="$password" --database="$database" --execute="DROP DATABASE $user; CREATE DATABASE $database;"
