@@ -87,7 +87,7 @@ resource "aws_default_route_table" "internet" {
 
 resource "aws_subnet" "public1" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.10.0/24"
+  cidr_block        = "10.0.80.0/24"
   availability_zone = local.availability_zone_1a
 
   # Auto-assign public IPv4 address
@@ -100,7 +100,7 @@ resource "aws_subnet" "public1" {
 
 resource "aws_subnet" "public2" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.20.0/24"
+  cidr_block        = "10.0.100.0/24"
   availability_zone = local.availability_zone_1b
 
   # Auto-assign public IPv4 address
