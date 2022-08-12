@@ -14,4 +14,15 @@ CREATE TABLE TEXTS (
   TXT varchar(255),
   PRIMARY KEY (ID)
 );
+
+CREATE PROCEDURE populate()
+BEGIN
+    DECLARE i int DEFAULT 1;
+    WHILE i <= 1000 DO
+        INSERT INTO TEXTS (TXT) VALUES ('AWS Data Migration');
+        SET i = i + 1;
+    END WHILE;
+END;
+
+CALL populate();
 ```
