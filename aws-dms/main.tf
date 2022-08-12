@@ -196,13 +196,14 @@ resource "aws_dms_replication_subnet_group" "main" {
 
 # Create a new replication instance
 resource "aws_dms_replication_instance" "main" {
-  allocated_storage           = 20
-  apply_immediately           = true
-  auto_minor_version_upgrade  = true
-  availability_zone           = local.availability_zone_1a
-  engine_version              = "3.4.7"
-  multi_az                    = false
-  publicly_accessible         = true
+  allocated_storage          = 20
+  apply_immediately          = true
+  auto_minor_version_upgrade = true
+  availability_zone          = local.availability_zone_1a
+  engine_version             = "3.4.7"
+  multi_az                   = false
+  publicly_accessible        = true
+
   replication_instance_class  = "dms.t2.micro"
   replication_instance_id     = "dms-replication-instance"
   replication_subnet_group_id = aws_dms_replication_subnet_group.main.id
