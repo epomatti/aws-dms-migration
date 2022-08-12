@@ -222,3 +222,21 @@ resource "aws_dms_replication_instance" "main" {
     aws_iam_role_policy_attachment.dms_access_for_endpoint_attach
   ]
 }
+
+### Migration Endpoints
+
+resource "aws_dms_endpoint" "source_mysql" {
+  database_name = "testdb"
+  endpoint_id   = "source-mysql"
+  endpoint_type = "source"
+  engine_name   = "mysql"
+  username      = "sysadmin"
+  password      = "passw0rd"
+  port          = 3306
+  server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
+
+  tags = {
+    Name = "source-mysql"
+  }
+
+}
