@@ -195,15 +195,13 @@ resource "aws_dms_replication_subnet_group" "main" {
 }
 
 # Create a new replication instance
-resource "aws_dms_replication_instance" "test" {
-  allocated_storage          = 20
-  apply_immediately          = true
-  auto_minor_version_upgrade = true
-  availability_zone          = local.availability_zone_1a
-  # engine_version             = "3.4.7"
-  # kms_key_arn                  = "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
-  multi_az = false
-  # preferred_maintenance_window = "sun:10:30-sun:14:30"
+resource "aws_dms_replication_instance" "main" {
+  allocated_storage           = 20
+  apply_immediately           = true
+  auto_minor_version_upgrade  = true
+  availability_zone           = local.availability_zone_1a
+  engine_version              = "3.4.7"
+  multi_az                    = false
   publicly_accessible         = true
   replication_instance_class  = "dms.t2.micro"
   replication_instance_id     = "dms-replication-instance"
