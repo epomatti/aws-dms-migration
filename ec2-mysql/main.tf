@@ -69,10 +69,28 @@ resource "aws_default_security_group" "default" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_security_group_rule" "ingress_ssh" {
+resource "aws_security_group_rule" "ingress_mysql" {
   type              = "ingress"
   from_port         = 3306
   to_port           = 3306
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_default_security_group.default.id
+}
+
+resource "aws_security_group_rule" "egress_http" {
+  type              = "egress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_default_security_group.default.id
+}
+
+resource "aws_security_group_rule" "egress_https" {
+  type              = "egress"
+  from_port         = 443
+  to_port           = 443
   protocol          = "tcp"
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_default_security_group.default.id
@@ -130,7 +148,7 @@ resource "aws_iam_instance_profile" "main" {
 }
 
 resource "aws_instance" "main" {
-  ami           = "ami-0a9e90bd830396d02"
+  ami           = "ami-08ae71fd7f1449df1"
   instance_type = "t3.medium"
 
   iam_instance_profile = aws_iam_instance_profile.main.id
