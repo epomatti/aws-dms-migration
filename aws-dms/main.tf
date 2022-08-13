@@ -190,10 +190,10 @@ resource "aws_dms_replication_instance" "main" {
 ### Target Databases ###
 
 // MySQL
-# resource "aws_db_subnet_group" "default" {
-#   name       = "main"
-#   subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id]
-# }
+resource "aws_db_subnet_group" "default" {
+  name       = "main"
+  subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id]
+}
 
 # resource "aws_db_instance" "target_mysql" {
 #   allocated_storage    = 10
@@ -213,28 +213,28 @@ resource "aws_dms_replication_instance" "main" {
 
 // Aurora
 
-# resource "aws_rds_cluster" "target_aurora" {
-#   cluster_identifier  = "aurora-cluster-replica"
-#   engine              = "aurora-mysql"
-#   engine_version      = "8.0.mysql_aurora.3.02.0"
-#   availability_zones  = [local.availability_zone_1a, local.availability_zone_1b]
-#   database_name       = "testdb"
-#   master_username     = "sysadmin"
-#   master_password     = "passw0rd"
-#   skip_final_snapshot = true
+resource "aws_rds_cluster" "target_aurora" {
+  cluster_identifier  = "aurora-cluster-replica"
+  engine              = "aurora-mysql"
+  engine_version      = "8.0.mysql_aurora.3.02.0"
+  availability_zones  = [local.availability_zone_1a, local.availability_zone_1b]
+  database_name       = "testdb"
+  master_username     = "sysadmin"
+  master_password     = "passw0rd"
+  skip_final_snapshot = true
 
-#   vpc_security_group_ids = [aws_security_group.main.id]
-#   db_subnet_group_name   = aws_db_subnet_group.default.id
-# }
+  vpc_security_group_ids = [aws_security_group.main.id]
+  db_subnet_group_name   = aws_db_subnet_group.default.id
+}
 
-# resource "aws_rds_cluster_instance" "aurora_instances" {
-#   identifier          = "aurora-mysql-instance"
-#   cluster_identifier  = aws_rds_cluster.target_aurora.id
-#   instance_class      = "db.t3.medium"
-#   engine              = aws_rds_cluster.target_aurora.engine
-#   engine_version      = aws_rds_cluster.target_aurora.engine_version
-#   publicly_accessible = true
-# }
+resource "aws_rds_cluster_instance" "aurora_instances" {
+  identifier          = "aurora-mysql-instance"
+  cluster_identifier  = aws_rds_cluster.target_aurora.id
+  instance_class      = "db.t3.medium"
+  engine              = aws_rds_cluster.target_aurora.engine
+  engine_version      = aws_rds_cluster.target_aurora.engine_version
+  publicly_accessible = true
+}
 
 ### Migration Endpoints ###
 
