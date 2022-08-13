@@ -278,6 +278,21 @@ resource "aws_dms_endpoint" "target_mysql" {
   }
 }
 
+### Replication Task ###
+
+resource "aws_dms_replication_task" "test" {
+  # cdc_start_time            = 1484346880
+  migration_type           = "full-load"
+  replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
+  replication_task_id      = "replication-full-load"
+  # replication_task_settings = "..."
+  source_endpoint_arn = aws_dms_endpoint.source_mysql.endpoint_arn
+  table_mappings      = "{\"rules\":[{\"rule-type\":\"selection\",\"rule-id\":\"1\",\"rule-name\":\"1\",\"object-locator\":{\"schema-name\":\"%\",\"table-name\":\"%\"},\"rule-action\":\"include\"}]}"
+  target_endpoint_arn = aws_dms_endpoint.target_mysql.endpoint_arn
+}
+
+### Outputs ###
+
 output "mysql_target" {
   value = aws_db_instance.target_mysql.address
 }
