@@ -263,3 +263,7 @@ resource "aws_dms_endpoint" "source_mysql" {
   }
 
 }
+
+output "mysql_target" {
+  value = aws_db_instance.target_mysql.address
+}
