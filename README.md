@@ -60,7 +60,7 @@ All tasks once started should run successfully:
 <img src=".docs/tasks.png" width=700 />
 
 
-### Clean-up
+## Clean-up
 
 Delete the infrastructure to avoid costs:
 
