@@ -1,6 +1,6 @@
 # AWS Data Migration Service (DMS)
 
-Migration sandbox from a mocked on-premises MySQL server database to AWS RDS MySQL, Postgres, and Aurora.
+Migration sandbox from a mocked on-premises MySQL server database to AWS RDS (MySQL, Postgres, Aurora).
 
 <img src=".docs/dms.png" width=700 />
 
