@@ -1,35 +1,33 @@
-# aws-rds-migrate
+# AWS Data Migration Service (DMS)
+
+Migration sandbox from a mocked on-premises MySQL database to AWS RDS, for both RDS Aurora and RDS MySQL as target destinations.
 
 <img src=".docs/dms.png" width=700 />
 
+### Crete the source database
 
+Create the EC2 source database infrastructure:
+
+```sh
+terraform -chdir='ec2-mysql' init
+terraform -chdir='ec2-mysql' apply -auto-approve
+```
+
+MySQL will be installed and running via user-data.
+
+Log into the VM using SSM.
+
+Use `sudo mysql` and execute the contexts of file [`prepare-database-.sql`](ec2-mysql/prepare-database-.sql) available in this repository. You can use your favorite SQL editor at this point too.
+
+Once the objects are created, execute the procedure to populate the table.
 
 ```sql
-CREATE USER 'sysadmin'@'localhost' IDENTIFIED BY 'passw0rd';
-GRANT ALL PRIVILEGES ON *.* TO 'sysadmin'@'localhost' WITH GRANT OPTION;
-CREATE USER 'sysadmin'@'%' IDENTIFIED BY 'passw0rd';
-GRANT ALL PRIVILEGES ON *.* TO 'sysadmin'@'%'WITH GRANT OPTION;
-
-CREATE DATABASE testdb;
-
-CREATE TABLE TEXTS (
-  ID INT NOT NULL AUTO_INCREMENT,
-  TXT varchar(255),
-  PRIMARY KEY (ID)
-);
-
-CREATE PROCEDURE populate()
-BEGIN
-    DECLARE i int DEFAULT 1;
-    WHILE i <= 1000 DO
-        INSERT INTO TEXTS (TXT) VALUES ('AWS Data Migration');
-        SET i = i + 1;
-    END WHILE;
-END;
-
 CALL populate();
 ```
 
+The database now have items to be replicated to RDS.
+
+### Migration resources
 
 Test both source and target database endpoints to make sure they're working properly.
 
