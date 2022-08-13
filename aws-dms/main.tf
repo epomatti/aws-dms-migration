@@ -6,6 +6,7 @@ locals {
   project_name         = "dms-migration"
   availability_zone_1a = "sa-east-1a"
   availability_zone_1b = "sa-east-1b"
+  availability_zone_1c = "sa-east-1c"
 }
 
 ### VPC ###
@@ -72,6 +73,19 @@ resource "aws_subnet" "public2" {
 
   tags = {
     Name = "${local.project_name}-public2"
+  }
+}
+
+resource "aws_subnet" "public3" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.120.0/24"
+  availability_zone = local.availability_zone_1c
+
+  # Auto-assign public IPv4 address
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${local.project_name}-public3"
   }
 }
 
@@ -192,7 +206,7 @@ resource "aws_dms_replication_instance" "main" {
 // MySQL
 resource "aws_db_subnet_group" "default" {
   name       = "main"
-  subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id]
+  subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id, aws_subnet.public3.id]
 }
 
 # resource "aws_db_instance" "target_mysql" {
@@ -214,10 +228,10 @@ resource "aws_db_subnet_group" "default" {
 // Aurora
 
 resource "aws_rds_cluster" "target_aurora" {
-  cluster_identifier  = "aurora-cluster-replica"
+  cluster_identifier  = "aurora-cluster"
   engine              = "aurora-mysql"
   engine_version      = "8.0.mysql_aurora.3.02.0"
-  availability_zones  = [local.availability_zone_1a, local.availability_zone_1b]
+  availability_zones  = [local.availability_zone_1a, local.availability_zone_1b, local.availability_zone_1c]
   database_name       = "testdb"
   master_username     = "sysadmin"
   master_password     = "passw0rd"
@@ -228,6 +242,7 @@ resource "aws_rds_cluster" "target_aurora" {
 }
 
 resource "aws_rds_cluster_instance" "aurora_instances" {
+  count               = 1
   identifier          = "aurora-mysql-instance"
   cluster_identifier  = aws_rds_cluster.target_aurora.id
   instance_class      = "db.t3.medium"
