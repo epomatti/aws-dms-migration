@@ -261,7 +261,21 @@ resource "aws_dms_endpoint" "source_mysql" {
   tags = {
     Name = "source-mysql"
   }
+}
 
+resource "aws_dms_endpoint" "target_mysql" {
+  database_name = "testdb"
+  endpoint_id   = "target-mysql"
+  endpoint_type = "target"
+  engine_name   = "mysql"
+  username      = "sysadmin"
+  password      = "passw0rd"
+  port          = 3306
+  server_name   = aws_db_instance.target_mysql.address
+
+  tags = {
+    Name = "target-mysql"
+  }
 }
 
 output "mysql_target" {
