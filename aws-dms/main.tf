@@ -207,11 +207,12 @@ resource "aws_dms_replication_instance" "main" {
 
 ### Target Databases ###
 
-// MySQL
 resource "aws_db_subnet_group" "default" {
   name       = "main"
   subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id, aws_subnet.public3.id]
 }
+
+// MySQL
 
 resource "aws_db_instance" "target_mysql" {
   allocated_storage    = 10
@@ -224,6 +225,23 @@ resource "aws_db_instance" "target_mysql" {
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
   publicly_accessible  = true
+
+  vpc_security_group_ids = [aws_security_group.main.id]
+  db_subnet_group_name   = aws_db_subnet_group.default.id
+}
+
+// PostgreSQL
+
+resource "aws_db_instance" "target_postgres" {
+  allocated_storage   = 10
+  engine              = "postgres"
+  engine_version      = "14.4"
+  instance_class      = "db.t3.micro"
+  db_name             = "testdb"
+  username            = "dmsuser"
+  password            = "passw0rd"
+  skip_final_snapshot = true
+  publicly_accessible = true
 
   vpc_security_group_ids = [aws_security_group.main.id]
   db_subnet_group_name   = aws_db_subnet_group.default.id
@@ -272,9 +290,9 @@ resource "aws_dms_endpoint" "source_mysql" {
   }
 }
 
-resource "aws_dms_endpoint" "target_mysql" {
+resource "aws_dms_endpoint" "target_rds_mysql" {
   database_name = "testdb"
-  endpoint_id   = "target-mysql"
+  endpoint_id   = "target-rds-mysql"
   endpoint_type = "target"
   engine_name   = "mysql"
   username      = "dmsuser"
@@ -283,13 +301,28 @@ resource "aws_dms_endpoint" "target_mysql" {
   server_name   = aws_db_instance.target_mysql.address
 
   tags = {
-    Name = "target-mysql"
+    Name = "target-rds-mysql"
   }
 }
 
-resource "aws_dms_endpoint" "target_aurora" {
+resource "aws_dms_endpoint" "target_rds_postgres" {
   database_name = "testdb"
-  endpoint_id   = "target-aurora"
+  endpoint_id   = "target-rds-postgres"
+  endpoint_type = "target"
+  engine_name   = "postgres"
+  username      = "dmsuser"
+  password      = "passw0rd"
+  port          = 5432
+  server_name   = aws_db_instance.target_postgres.address
+
+  tags = {
+    Name = "target-rds-postgres"
+  }
+}
+
+resource "aws_dms_endpoint" "target_rds_aurora" {
+  database_name = "testdb"
+  endpoint_id   = "target-rds-aurora"
   endpoint_type = "target"
   engine_name   = "aurora"
   username      = "dmsuser"
@@ -298,19 +331,19 @@ resource "aws_dms_endpoint" "target_aurora" {
   server_name   = aws_rds_cluster.target_aurora.endpoint
 
   tags = {
-    Name = "target-aurora"
+    Name = "target-rds-aurora"
   }
 }
 
 # ### Replication Task ###
 
-resource "aws_dms_replication_task" "mysql" {
+resource "aws_dms_replication_task" "rds_mysql" {
   migration_type           = "full-load-and-cdc"
   replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
-  replication_task_id      = "replication-task-mysql-1"
+  replication_task_id      = "replication-task-rds-mysql-1"
   source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
   table_mappings           = file("${path.module}/table-mappings.json")
-  target_endpoint_arn      = aws_dms_endpoint.target_mysql.endpoint_arn
+  target_endpoint_arn      = aws_dms_endpoint.target_rds_mysql.endpoint_arn
 
   lifecycle {
     ignore_changes = [
@@ -319,13 +352,28 @@ resource "aws_dms_replication_task" "mysql" {
   }
 }
 
-resource "aws_dms_replication_task" "aurora" {
+resource "aws_dms_replication_task" "rds_postgres" {
   migration_type           = "full-load-and-cdc"
   replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
-  replication_task_id      = "replication-task-aurora-1"
+  replication_task_id      = "replication-task-rds-postgres-1"
   source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
   table_mappings           = file("${path.module}/table-mappings.json")
-  target_endpoint_arn      = aws_dms_endpoint.target_aurora.endpoint_arn
+  target_endpoint_arn      = aws_dms_endpoint.target_rds_postgres.endpoint_arn
+
+  lifecycle {
+    ignore_changes = [
+      replication_task_settings
+    ]
+  }
+}
+
+resource "aws_dms_replication_task" "rds_aurora" {
+  migration_type           = "full-load-and-cdc"
+  replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
+  replication_task_id      = "replication-task-rds-aurora-1"
+  source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
+  table_mappings           = file("${path.module}/table-mappings.json")
+  target_endpoint_arn      = aws_dms_endpoint.target_rds_aurora.endpoint_arn
 
   lifecycle {
     ignore_changes = [
@@ -338,6 +386,10 @@ resource "aws_dms_replication_task" "aurora" {
 
 output "mysql_target" {
   value = aws_db_instance.target_mysql.address
+}
+
+output "postgres_target" {
+  value = aws_db_instance.target_postgres.address
 }
 
 output "aurora_target" {
