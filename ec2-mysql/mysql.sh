@@ -8,7 +8,6 @@ sudo apt-get upgrade -y
 sudo apt-get install mysql-server -y
 sudo systemctl start mysql.service
 
-sudo sed -i 's/127.0.0.1/0.0.0.0/0#g' /etc/mysql/mysql.conf.d/mysqld.cnf
-sudo systemctl restart mysql
-
+sudo sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mysql.conf.d/mysqld.cnf
 sudo ufw allow 3306
+sudo systemctl restart mysql
