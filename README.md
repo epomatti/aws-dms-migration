@@ -29,3 +29,6 @@ CALL populate();
 
 
 Test both source and target database endpoints to make sure they're working properly.
+
+
+Start the migration task
