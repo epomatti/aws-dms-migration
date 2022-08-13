@@ -168,7 +168,7 @@ resource "aws_dms_replication_subnet_group" "main" {
   replication_subnet_group_id          = "dms-replication-subnet-group"
 
   subnet_ids = [
-    aws_subnet.public1.id, aws_subnet.public2.id
+    aws_subnet.public1.id, aws_subnet.public2.id, aws_subnet.public3.id
   ]
 }
 
@@ -215,7 +215,7 @@ resource "aws_db_subnet_group" "default" {
 #   engine_version       = "8.0.28"
 #   instance_class       = "db.t3.micro"
 #   db_name              = "testdb"
-#   username             = "sysadmin"
+#   username             = "dmsuser"
 #   password             = "passw0rd"
 #   parameter_group_name = "default.mysql8.0"
 #   skip_final_snapshot  = true
@@ -233,7 +233,7 @@ resource "aws_rds_cluster" "target_aurora" {
   engine_version      = "8.0.mysql_aurora.3.02.0"
   availability_zones  = [local.availability_zone_1a, local.availability_zone_1b, local.availability_zone_1c]
   database_name       = "testdb"
-  master_username     = "sysadmin"
+  master_username     = "dmsuser"
   master_password     = "passw0rd"
   skip_final_snapshot = true
 
@@ -253,27 +253,27 @@ resource "aws_rds_cluster_instance" "aurora_instances" {
 
 ### Migration Endpoints ###
 
-# resource "aws_dms_endpoint" "source_mysql" {
-#   database_name = "testdb"
-#   endpoint_id   = "source-mysql"
-#   endpoint_type = "source"
-#   engine_name   = "mysql"
-#   username      = "sysadmin"
-#   password      = "passw0rd"
-#   port          = 3306
-#   server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
+resource "aws_dms_endpoint" "source_mysql" {
+  database_name = "testdb"
+  endpoint_id   = "source-mysql"
+  endpoint_type = "source"
+  engine_name   = "mysql"
+  username      = "dmsuser"
+  password      = "passw0rd"
+  port          = 3306
+  server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
 
-#   tags = {
-#     Name = "source-mysql"
-#   }
-# }
+  tags = {
+    Name = "source-mysql"
+  }
+}
 
 # resource "aws_dms_endpoint" "target_mysql" {
 #   database_name = "testdb"
 #   endpoint_id   = "target-mysql"
 #   endpoint_type = "target"
 #   engine_name   = "mysql"
-#   username      = "sysadmin"
+#   username      = "dmsuser"
 #   password      = "passw0rd"
 #   port          = 3306
 #   server_name   = aws_db_instance.target_mysql.address
@@ -283,31 +283,40 @@ resource "aws_rds_cluster_instance" "aurora_instances" {
 #   }
 # }
 
-# resource "aws_dms_endpoint" "target_aurora" {
-#   database_name = "testdb"
-#   endpoint_id   = "target-aurora"
-#   endpoint_type = "target"
-#   engine_name   = "aurora"
-#   username      = "sysadmin"
-#   password      = "passw0rd"
-#   port          = 3306
-#   server_name   = aws_rds_cluster.target_aurora.endpoint
+resource "aws_dms_endpoint" "target_aurora" {
+  database_name = "testdb"
+  endpoint_id   = "target-aurora"
+  endpoint_type = "target"
+  engine_name   = "aurora"
+  username      = "dmsuser"
+  password      = "passw0rd"
+  port          = 3306
+  server_name   = aws_rds_cluster.target_aurora.endpoint
 
-#   tags = {
-#     Name = "target-aurora"
-#   }
-# }
+  tags = {
+    Name = "target-aurora"
+  }
+}
 
 # ### Replication Task ###
 
-# resource "aws_dms_replication_task" "main" {
+# resource "aws_dms_replication_task" "mysql" {
 #   migration_type           = "full-load-and-cdc"
 #   replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
-#   replication_task_id      = "replication-task-1"
+#   replication_task_id      = "replication-task-mysql-1"
 #   source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
 #   table_mappings           = file("${path.module}/table-mappings.json")
 #   target_endpoint_arn      = aws_dms_endpoint.target_mysql.endpoint_arn
 # }
+
+resource "aws_dms_replication_task" "aurora" {
+  migration_type           = "full-load-and-cdc"
+  replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
+  replication_task_id      = "replication-task-aurora-1"
+  source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
+  table_mappings           = file("${path.module}/table-mappings.json")
+  target_endpoint_arn      = aws_dms_endpoint.target_aurora.endpoint_arn
+}
 
 # ### Outputs ###
 
@@ -315,6 +324,6 @@ resource "aws_rds_cluster_instance" "aurora_instances" {
 #   value = aws_db_instance.target_mysql.address
 # }
 
-# output "aurora_target" {
-#   value = aws_rds_cluster.target_aurora.endpoint
-# }
+output "aurora_target" {
+  value = aws_rds_cluster.target_aurora.endpoint
+}

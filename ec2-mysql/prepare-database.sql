@@ -1,7 +1,7 @@
-CREATE USER 'dms-user'@'localhost' IDENTIFIED BY 'passw0rd';
-GRANT ALL PRIVILEGES ON *.* TO 'dms-user'@'localhost' WITH GRANT OPTION;
-CREATE USER 'dms-user'@'%' IDENTIFIED BY 'passw0rd';
-GRANT ALL PRIVILEGES ON *.* TO 'dms-user'@'%'WITH GRANT OPTION;
+CREATE USER 'dmsuser'@'localhost' IDENTIFIED BY 'passw0rd';
+GRANT ALL PRIVILEGES ON *.* TO 'dmsuser'@'localhost' WITH GRANT OPTION;
+CREATE USER 'dmsuser'@'%' IDENTIFIED BY 'passw0rd';
+GRANT ALL PRIVILEGES ON *.* TO 'dmsuser'@'%'WITH GRANT OPTION;
 
 CREATE DATABASE testdb;
 
