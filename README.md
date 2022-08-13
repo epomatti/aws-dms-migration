@@ -27,7 +27,7 @@ CALL populate();
 
 The database now have items to be replicated to RDS.
 
-## Migration resources
+## Create the migration resources
 
 This will create the migration instance, and the RDS MySQL and RDS Aurora.
 
@@ -51,9 +51,10 @@ Once done, connect to the console test the endpoint connections.
 
 https://sa-east-1.console.aws.amazon.com/dms/v2/home?region=sa-east-1#endpointList
 
-If the endpoint connections tests are successful, replication is ready to start.
-
-Move to the DMS migration tasks blade and start the migrations.
+If the endpoint connections tests are successful, replication is ready to start. Move to the DMS migration tasks blade and start the migrations.
 
 https://sa-east-1.console.aws.amazon.com/dms/v2/home?region=sa-east-1#tasks
 
+All tasks once started should run successfully:
+
+<img src=".docs/tasks.png" width=700 />
