@@ -47,7 +47,7 @@ terraform -chdir='aws-dms' init
 terraform -chdir='aws-dms' apply -auto-approve
 ```
 
-Once done, connect to the console test the endpoint connections.
+Once done, connect to the console and check the connection tests.
 
 https://sa-east-1.console.aws.amazon.com/dms/v2/home?region=sa-east-1#endpointList
 
