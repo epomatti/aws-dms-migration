@@ -29,7 +29,10 @@ The database now have items to be replicated to RDS.
 
 ### Migration resources
 
-Test both source and target database endpoints to make sure they're working properly.
+This will create the migration instance, and the RDS MySQL and RDS Auroral.
 
+```sh
+terraform -chdir='aws-dms' init
+terraform -chdir='aws-dms' apply -auto-approve
+```
 
-Start the migration task
