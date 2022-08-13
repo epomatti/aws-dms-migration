@@ -223,7 +223,30 @@ resource "aws_dms_replication_instance" "main" {
   ]
 }
 
-### Migration Endpoints
+### Target Database ###
+
+resource "aws_db_subnet_group" "default" {
+  name       = "main"
+  subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id]
+}
+
+resource "aws_db_instance" "target_mysql" {
+  allocated_storage    = 10
+  engine               = "mysql"
+  engine_version       = "8.0.28"
+  instance_class       = "db.t3.micro"
+  db_name              = "testdb"
+  username             = "sysadmin"
+  password             = "passw0rd"
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+  publicly_accessible  = true
+
+  vpc_security_group_ids = [aws_security_group.main.id]
+  db_subnet_group_name   = aws_db_subnet_group.default.id
+}
+
+### Migration Endpoints ###
 
 resource "aws_dms_endpoint" "source_mysql" {
   database_name = "testdb"
