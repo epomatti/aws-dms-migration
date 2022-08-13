@@ -281,14 +281,12 @@ resource "aws_dms_endpoint" "target_mysql" {
 ### Replication Task ###
 
 resource "aws_dms_replication_task" "test" {
-  # cdc_start_time            = 1484346880
   migration_type           = "full-load-and-cdc"
   replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
   replication_task_id      = "replication-task-1"
-  # replication_task_settings = "..."
-  source_endpoint_arn = aws_dms_endpoint.source_mysql.endpoint_arn
-  table_mappings      = file("${path.module}/table-mappings.json")
-  target_endpoint_arn = aws_dms_endpoint.target_mysql.endpoint_arn
+  source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
+  table_mappings           = file("${path.module}/table-mappings.json")
+  target_endpoint_arn      = aws_dms_endpoint.target_mysql.endpoint_arn
 }
 
 ### Outputs ###
