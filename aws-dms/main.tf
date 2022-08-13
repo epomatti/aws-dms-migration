@@ -2,6 +2,10 @@ provider "aws" {
   region = "sa-east-1"
 }
 
+variable "ec2_mysql_endpoint" {
+  type = string
+}
+
 locals {
   project_name         = "dms-migration"
   availability_zone_1a = "sa-east-1a"
@@ -261,7 +265,7 @@ resource "aws_dms_endpoint" "source_mysql" {
   username      = "dmsuser"
   password      = "passw0rd"
   port          = 3306
-  server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
+  server_name   = var.ec2_mysql_endpoint
 
   tags = {
     Name = "source-mysql"
