@@ -58,3 +58,13 @@ https://sa-east-1.console.aws.amazon.com/dms/v2/home?region=sa-east-1#tasks
 All tasks once started should run successfully:
 
 <img src=".docs/tasks.png" width=700 />
+
+
+### Clean-up
+
+Delete the infrastructure to avoid costs:
+
+```sh
+terraform -chdir='aws-dms' destroy -auto-approve
+terraform -chdir='ec2-mysql' destroy -auto-approve
+```
