@@ -29,7 +29,7 @@ The database now have items to be replicated to RDS.
 
 ## Create the migration resources
 
-This will create the migration instance, and the RDS MySQL and RDS Aurora.
+This will create the migration instance, and the RDS databse instances.
 
 First create the variables:
 
