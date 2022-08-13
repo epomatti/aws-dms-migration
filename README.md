@@ -1,5 +1,8 @@
 # aws-rds-migrate
 
+<img src=".docs/dms.png" width=700 />
+
+
 
 ```sql
 CREATE USER 'sysadmin'@'localhost' IDENTIFIED BY 'passw0rd';

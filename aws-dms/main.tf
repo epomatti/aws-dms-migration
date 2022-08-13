@@ -8,42 +8,6 @@ locals {
   availability_zone_1b = "sa-east-1b"
 }
 
-### Migration Bucket ###
-
-# resource "aws_s3_bucket" "main" {
-#   bucket = "bucket-dms-mysql-migration-epomatti999"
-
-#   tags = {
-#     Name = "mysql-migration"
-#   }
-# }
-
-# resource "aws_s3_bucket_acl" "main" {
-#   bucket = aws_s3_bucket.main.id
-#   acl    = "private"
-# }
-
-# resource "aws_s3_bucket_public_access_block" "main" {
-#   bucket = aws_s3_bucket.main.id
-
-#   block_public_acls       = true
-#   block_public_policy     = true
-#   ignore_public_acls      = true
-#   restrict_public_buckets = true
-# }
-
-
-# ### DMS ###
-
-# resource "aws_iam_role" "dms_vpc_role" {
-#   name               = "DMSDiscoveryS3FullAccess"
-#   assume_role_policy = file("${path.module}/policies/dms-vpc-role.json")
-# }
-
-# data "aws_iam_policy" "amazon_s3_fullaccess" {
-#   arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-# }
-
 ### VPC ###
 
 resource "aws_vpc" "main" {
@@ -223,8 +187,9 @@ resource "aws_dms_replication_instance" "main" {
   ]
 }
 
-### Target Database ###
+### Target Databases ###
 
+// MySQL
 resource "aws_db_subnet_group" "default" {
   name       = "main"
   subnet_ids = [aws_subnet.public1.id, aws_subnet.public2.id]
@@ -246,51 +211,79 @@ resource "aws_db_instance" "target_mysql" {
   db_subnet_group_name   = aws_db_subnet_group.default.id
 }
 
+// Aurora
+
+resource "aws_rds_cluster" "target_aurora" {
+  cluster_identifier = "aurora-cluster-replica"
+  engine             = "aurora-mysql"
+  engine_version     = "8.0.mysql_aurora.3.02.0"
+  availability_zones = [local.availability_zone_1a, local.availability_zone_1b]
+  database_name      = "testdb"
+  master_username    = "sysadmin"
+  master_password    = "passw0rd"
+
+  vpc_security_group_ids = [aws_security_group.main.id]
+  db_subnet_group_name   = aws_db_subnet_group.default.id
+}
+
+resource "aws_rds_cluster_instance" "aurora_instances" {
+  identifier          = "aurora-mysql-instance"
+  cluster_identifier  = aws_rds_cluster.target_aurora.id
+  instance_class      = "db.t3.medium"
+  engine              = aws_rds_cluster.target_aurora.engine
+  engine_version      = aws_rds_cluster.target_aurora.engine_version
+  publicly_accessible = true
+}
+
 ### Migration Endpoints ###
 
-resource "aws_dms_endpoint" "source_mysql" {
-  database_name = "testdb"
-  endpoint_id   = "source-mysql"
-  endpoint_type = "source"
-  engine_name   = "mysql"
-  username      = "sysadmin"
-  password      = "passw0rd"
-  port          = 3306
-  server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
+# resource "aws_dms_endpoint" "source_mysql" {
+#   database_name = "testdb"
+#   endpoint_id   = "source-mysql"
+#   endpoint_type = "source"
+#   engine_name   = "mysql"
+#   username      = "sysadmin"
+#   password      = "passw0rd"
+#   port          = 3306
+#   server_name   = "ec2-18-228-157-209.sa-east-1.compute.amazonaws.com"
 
-  tags = {
-    Name = "source-mysql"
-  }
-}
+#   tags = {
+#     Name = "source-mysql"
+#   }
+# }
 
-resource "aws_dms_endpoint" "target_mysql" {
-  database_name = "testdb"
-  endpoint_id   = "target-mysql"
-  endpoint_type = "target"
-  engine_name   = "mysql"
-  username      = "sysadmin"
-  password      = "passw0rd"
-  port          = 3306
-  server_name   = aws_db_instance.target_mysql.address
+# resource "aws_dms_endpoint" "target_mysql" {
+#   database_name = "testdb"
+#   endpoint_id   = "target-mysql"
+#   endpoint_type = "target"
+#   engine_name   = "mysql"
+#   username      = "sysadmin"
+#   password      = "passw0rd"
+#   port          = 3306
+#   server_name   = aws_db_instance.target_mysql.address
 
-  tags = {
-    Name = "target-mysql"
-  }
-}
+#   tags = {
+#     Name = "target-mysql"
+#   }
+# }
 
-### Replication Task ###
+# ### Replication Task ###
 
-resource "aws_dms_replication_task" "test" {
-  migration_type           = "full-load-and-cdc"
-  replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
-  replication_task_id      = "replication-task-1"
-  source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
-  table_mappings           = file("${path.module}/table-mappings.json")
-  target_endpoint_arn      = aws_dms_endpoint.target_mysql.endpoint_arn
-}
+# resource "aws_dms_replication_task" "main" {
+#   migration_type           = "full-load-and-cdc"
+#   replication_instance_arn = aws_dms_replication_instance.main.replication_instance_arn
+#   replication_task_id      = "replication-task-1"
+#   source_endpoint_arn      = aws_dms_endpoint.source_mysql.endpoint_arn
+#   table_mappings           = file("${path.module}/table-mappings.json")
+#   target_endpoint_arn      = aws_dms_endpoint.target_mysql.endpoint_arn
+# }
 
-### Outputs ###
+# ### Outputs ###
 
 output "mysql_target" {
   value = aws_db_instance.target_mysql.address
+}
+
+output "aurora_target" {
+  value = aws_rds_cluster.target_aurora.endpoint
 }
